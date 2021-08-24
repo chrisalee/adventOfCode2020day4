@@ -17,7 +17,41 @@ const data = `
   hcl:#cfa07d eyr:2025 pid:166559648
   iyr:2011 ecl:brn hgt:59in
  `;
+//PART 2 optimized
+const inputList = data.trim().split("\n\n");
+const requiredKeys = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]; 
+const entryObjects = inputList.map((entry) => 
+  entry
+    .replace(/\n/g, " ")
+    .split(" ")
+    .map(keyValuePair => keyValuePair.split(":"))
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
+);
 
+const checkInRange = (numString, min, max) => {
+  const num = parseInt(numString);
+  return min <= num && num <= max;
+}
+
+const completenessCheck = (obj) => requiredKeys.every(key => obj[key]);
+const validityCheck = ({ byr, iyr, eyr, hgt, hcl, ecl, pid }) => {
+  const byrCheck = checkInRange(byr, 1920, 2002);
+  const iyrCheck = checkInRange(iyr, 2010, 2020);
+  const eyrCheck = checkInRange(eyr, 2020, 2030);
+  const hgtCheck = /^(?:(?:(?:59|6[0-9]|7[0-6])in)|(?:(?:1[5-8][0-9]|19[0-3])cm))$/.test(hgt);
+  const hclCheck = /^#[0-9a-f]{6}$/.test(hcl);
+  const eclCheck = /^(?:amb|blu|brn|gry|grn|hzl|oth)$/.test(ecl);
+  const pidCHeck = /^\d{9}$/.test(pid);
+  
+  const results = {byrCheck, iyrCheck, eyrCheck, hgtCheck, hclCheck, eclCheck, pidCHeck};
+  // console.log(results);
+  // console.log(Object.values(results).every(bool => bool));
+  return (byrCheck && iyrCheck && eyrCheck && hgtCheck && hclCheck && eclCheck && pidCHeck);
+};
+
+const validPassports = entryObjects.filter(entry => completenessCheck(entry) && validityCheck(entry)).length;
+
+console.log(validPassports);
 
 // PART 2
 const inputList = data.trim().split("\n\n");
