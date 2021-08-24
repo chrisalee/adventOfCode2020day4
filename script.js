@@ -19,6 +19,61 @@ const data = `
  `;
 
 
+// PART 2
+const inputList = data.trim().split("\n\n");
+const requiredKeys = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]; 
+const entryObjects = inputList.map((entry) => 
+  entry
+    .replace(/\n/g, " ")
+    .split(" ")
+    .map(keyValuePair => keyValuePair.split(":"))
+    .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {})
+);
+//for each object
+//check if all the required fields are there
+
+//validations needed:
+// byr (Birth Year) - four digits; at least 1920 and at most 2002.
+// iyr (Issue Year) - four digits; at least 2010 and at most 2020.
+// eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
+// hgt (Height) - a number followed by either cm or in:
+// If cm, the number must be at least 150 and at most 193.
+// If in, the number must be at least 59 and at most 76.
+// hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
+// ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
+// pid (Passport ID) - a nine-digit number, including leading zeroes.
+// cid (Country ID) - ignored, missing or not.
+
+const checkInRange = (numString, min, max) => {
+  const num = parseInt(numString);
+  return min <= num && num <= max;
+}
+
+const completenessCheck = (obj) => requiredKeys.every(key => obj[key]);
+const validityCheck = ({ byr, iyr, eyr, hgt, hcl, ecl, pid }) => {
+  const byrCheck = checkInRange(byr, 1920, 2002);
+  const iyrCheck = checkInRange(iyr, 2010, 2020);
+  const eyrCheck = checkInRange(eyr, 2020, 2030);
+  
+  const hgtPattern = /^(\d+)(cm|in)$/;
+  let hgtCheck = false;
+  if(hgtPattern.test(hgt)) {
+    const [_, numString, unit] = hgt.match(hgtPattern);
+    const num = parseInt(numString);
+    hgtCheck = ((unit === "cm" && checkInRange(numString, 150,193)) || (unit === 'in' && checkInRange(numString, 59, 76)));
+  };
+  
+  const hclCheck = /^#[0-9a-f]{6}$/.test(hcl);
+  const eclCheck = /^(?:amb|blu|brn|gry|grn|hzl|oth)$/.test(ecl);
+  const pidCHeck = /^\d{9}$/.test(pid);
+  
+  const results = {byrCheck, iyrCheck, eyrCheck, hgtCheck, hclCheck, eclCheck, pidCHeck};
+  return (byrCheck && iyrCheck && eyrCheck && hgtCheck && hclCheck && eclCheck && pidCHeck);
+};
+console.log(entryObjects.filter(entry => completenessCheck(entry) && validityCheck(entry)).length);
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PART 1
 //cleaned up version of the very bottom
 const inputList = dataLong.trim().split("\n\n");
 const requiredKeys = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"]; 
